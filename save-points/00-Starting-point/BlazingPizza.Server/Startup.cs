@@ -1,9 +1,7 @@
 using System.Linq;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -26,7 +24,10 @@ namespace BlazingPizza.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddNewtonsoftJson();
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
+
+          //  services.AddMvc().AddNewtonsoftJson();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -62,13 +63,17 @@ namespace BlazingPizza.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBlazorDebugging();
+           
             }
             app.UseAuthentication();
 
-            app.UseMvc();
+            app.UseRouting();
 
-            app.UseBlazor<Client.Startup>();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
+            });        
         }
 
     }
