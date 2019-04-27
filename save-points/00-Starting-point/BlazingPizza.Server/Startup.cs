@@ -27,7 +27,7 @@ namespace BlazingPizza.Server
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
-          //  services.AddMvc().AddNewtonsoftJson();
+            services.AddMvc().AddNewtonsoftJson();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -36,7 +36,7 @@ namespace BlazingPizza.Server
 
             services.AddDbContext<PizzaStoreContext>(options => options.UseSqlite("Data Source=pizza.db"));
 
-           
+
 
             services
                 .AddAuthentication(options =>
@@ -58,22 +58,33 @@ namespace BlazingPizza.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseResponseCompression();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-           
             }
+            else
+            {
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
+
             app.UseAuthentication();
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages();
+                endpoints.MapControllers();
                 endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/_Host");
-            });        
+                endpoints.MapFallbackToPage("/_Host");                
+            });
+
+            app.UseBlazor<Client.Startup>();
         }
 
     }
