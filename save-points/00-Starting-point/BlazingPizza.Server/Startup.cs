@@ -1,7 +1,9 @@
 using System.Linq;
+using System.Net.Http;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -33,6 +35,18 @@ namespace BlazingPizza.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+
+            // Setup HttpClient for server side in a client side compatible fashion
+            services.AddScoped<HttpClient>(s =>
+            {
+                // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
+                var uriHelper = s.GetRequiredService<IUriHelper>();
+                return new HttpClient
+                {
+                    BaseAddress = new System.Uri(uriHelper.GetBaseUri())
+                };
+            });
+
 
             services.AddDbContext<PizzaStoreContext>(options => options.UseSqlite("Data Source=pizza.db"));
 
